@@ -24,7 +24,7 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 
 import io.pivotal.spring.geode.async.RawAsyncEventListener;
-import io.pivotal.spring.geode.async.ServerCacheListener;
+// import io.pivotal.spring.geode.async.ServerCacheListener;
 
 
 /**
@@ -119,7 +119,7 @@ public class GeodeCacheServerConfiguration {
         rawRegionAttributes.setKeyConstraint(String.class);
         rawRegionAttributes.setValueConstraint(Object.class);
         rawRegionAttributes.setEntryTimeToLive(expirationAttributes);
-        rawRegionAttributes.addCacheListener(serverCacheListener());
+        // rawRegionAttributes.addCacheListener(serverCacheListener());
 
         return rawRegionAttributes;
     }
@@ -135,21 +135,15 @@ public class GeodeCacheServerConfiguration {
         return expirationAttributes;
     }
 
-//    @Bean
-//    RawChangeListener rawChangeListener() {
-//        return new RawChangeListener();
-//    }
-
     @Bean
     RawAsyncEventListener rawAsyncEventListener() {
         return new RawAsyncEventListener();
     }
 
-    @Bean
-    ServerCacheListener serverCacheListener() {
-        return new ServerCacheListener();
-    }
-
+    // @Bean
+    // ServerCacheListener serverCacheListener() {
+    //     return new ServerCacheListener();
+    // }
 
     @Bean
     AsyncEventQueueFactoryBean asyncEventQueue(Cache gemfireCache) {

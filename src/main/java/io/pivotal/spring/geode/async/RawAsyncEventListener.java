@@ -50,6 +50,8 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
         Long keyTimestamp = 0L;
         String keyUuid = "";
         String keyRoute = "";
+        String keyPickupAddress = "";
+        String keyDropoffAddress = "";
         Integer keyCount = 0;
         Boolean incremental = true;
 
@@ -76,6 +78,8 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
 
                 // get route from the key in JSON format
                 String route = (String)raw.getField("route");
+                String pickupAddress = (String)raw.getField("pickupAddress");
+                String dropoffAddress = (String)raw.getField("dropoffAddress");
                 Long newTimestamp = (Long)raw.getField("timestamp");
 
                 Integer originalCount = 0 ;
@@ -95,10 +99,10 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
                 }
 
 //                processRegionCount(regionCount, route, originalCount, originalTimestamp, newCount, newTimestamp);
-                processor.processRegionCount(route, originalCount, originalTimestamp, newCount, newTimestamp);
+                processor.processRegionCount(route, pickupAddress, dropoffAddress, originalCount, originalTimestamp, newCount, newTimestamp);
 
 //                processRegionTop(regionTop, route, originalCount, originalTimestamp, newCount, newTimestamp);
-                processor.processRegionTop(route, originalCount, originalTimestamp, newCount, newTimestamp);
+                processor.processRegionTop(route, pickupAddress, dropoffAddress, originalCount, originalTimestamp, newCount, newTimestamp);
 
                 // Check whether need to refresh topten
                 if (newCount > originalCount) {
@@ -110,6 +114,8 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
                             keyTimestamp = (Long)raw.getField("timestamp");
                             keyUuid = (String)raw.getField("uuid");
                             keyRoute = route;
+                            keyPickupAddress = pickupAddress;
+                            keyDropoffAddress = dropoffAddress;
                             keyCount = newCount;
                             incremental = true;
                         }
@@ -125,8 +131,7 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
             }
 
             if (isProcessTopTen) {
-//                processRegionTopTen(regionTop, regionTopTen, keyRoute, keyUuid, keyCount, keyTimestamp);
-                processor.processRegionTopTen(keyRoute, keyUuid, keyCount, keyTimestamp, incremental);
+                processor.processRegionTopTen(keyRoute, keyPickupAddress, keyDropoffAddress, keyUuid, keyCount, keyTimestamp, incremental);
             }
 
         } catch (Exception e) {

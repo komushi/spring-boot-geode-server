@@ -23,13 +23,13 @@ public class RegionProcessor {
         this.regionTopTen = regionTopTen;
     }
 
-    public void processRegionCount(String route, Integer originalCount, Long originalTimestamp, Integer newCount, Long newTimestamp) throws Exception{
+    public void processRegionCount(String route, String pickupAddress, String dropoffAddress, Integer originalCount, Long originalTimestamp, Integer newCount, Long newTimestamp) throws Exception{
         // process RegionCount
 
         if (newCount == 0) {
             regionCount.destroy(route);
         } else {
-            JSONObject jsonObj = new JSONObject().put("route", route).put("route_count", newCount).put("timestamp", newTimestamp);
+            JSONObject jsonObj = new JSONObject().put("route", route).put("pickup_address", pickupAddress).put("dropoff_address", dropoffAddress).put("route_count", newCount).put("timestamp", newTimestamp);
             PdxInstance entryValue = JSONFormatter.fromJSON(jsonObj.toString());
 
             if(originalCount == 0){
@@ -42,18 +42,18 @@ public class RegionProcessor {
         }
     }
 
-    public void processRegionTop(String route, Integer originalCount, Long originalTimestamp, Integer newCount, Long newTimestamp) throws Exception{
+    public void processRegionTop(String route, String pickupAddress, String dropoffAddress, Integer originalCount, Long originalTimestamp, Integer newCount, Long newTimestamp) throws Exception{
 
         if (newCount > originalCount) {
 
             // add to new entry
-            addRouteToTop(regionTop, route, newCount, newTimestamp);
+            addRouteToTop(regionTop, route, pickupAddress, dropoffAddress, newCount, newTimestamp);
 
 
             if (originalCount != 0) {
 
                 // remove from old entry
-                removeRouteFromOldTop(regionTop, route, originalCount, originalTimestamp);
+                removeRouteFromOldTop(regionTop, route, pickupAddress, dropoffAddress, originalCount, originalTimestamp);
             }
 
         }
@@ -62,21 +62,26 @@ public class RegionProcessor {
             // https://issues.apache.org/jira/browse/GEODE-1209
             if (newCount != 0) {
                 // add to new entry
-                addRouteToTop(regionTop, route, newCount, newTimestamp);
+                addRouteToTop(regionTop, route, pickupAddress, dropoffAddress, newCount, newTimestamp);
 
             }
 
             // add to new entry
-            removeRouteFromOldTop(regionTop, route, originalCount, originalTimestamp);
+            removeRouteFromOldTop(regionTop, route, pickupAddress, dropoffAddress, originalCount, originalTimestamp);
 
         }
 
     }
 
-    private PdxInstance generateRoutesJson(Integer targetCount, LinkedList<String> targetRoutes, LinkedList<Long> targetTimestamps) throws Exception{
+    private PdxInstance generateRoutesJson(Integer targetCount, LinkedList<String> targetRoutes, LinkedList<String> targetPickupAddresses, LinkedList<String> targetDropoffAddresses, LinkedList<Long> targetTimestamps) throws Exception{
 
 
-        JSONObject jsonObj = new JSONObject().put("route_count", targetCount).put("routes", targetRoutes).put("timestamps", targetTimestamps);
+        JSONObject jsonObj = new JSONObject()
+                                .put("route_count", targetCount)
+                                .put("routes", targetRoutes)
+                                .put("pickup_addresses", targetPickupAddresses)
+                                .put("dropoff_addresses", targetDropoffAddresses)
+                                .put("timestamps", targetTimestamps);
 
         PdxInstance regionTopValue = JSONFormatter.fromJSON(jsonObj.toString());
 
@@ -84,42 +89,53 @@ public class RegionProcessor {
 
     }
 
-    private void addRouteToTop(Region<Integer, PdxInstance> regionTop, String route, Integer newCount, Long newTimestamp) throws Exception{
+    private void addRouteToTop(Region<Integer, PdxInstance> regionTop, String route, String pickupAddress, String dropoffAddress, Integer newCount, Long newTimestamp) throws Exception{
 //        System.out.println("RawChangeListener: addRouteToTop " + route + " " + newCount);
 
         LinkedList<String> routes = null;
         LinkedList<Long> timestamps = null;
-        Object pdxObj = regionTop.get(newCount);
+        LinkedList<String> pickupAddresses = null;
+        LinkedList<String> dropoffAddresses = null;
+        PdxInstance pdxObj = regionTop.get(newCount);
 
         if (pdxObj != null)
         {
-            routes = (LinkedList)((PdxInstance)pdxObj).getField("routes");
-            timestamps = (LinkedList)((PdxInstance)pdxObj).getField("timestamps");
+            routes = (LinkedList<String>)pdxObj.getField("routes");
+            timestamps = (LinkedList<Long>)pdxObj.getField("timestamps");
+            pickupAddresses = (LinkedList<String>)pdxObj.getField("pickup_addresses");
+            dropoffAddresses = (LinkedList<String>)pdxObj.getField("dropoff_addresses");
         }
         else
         {
             routes = new LinkedList<String>();
             timestamps = new LinkedList<Long>();
+            pickupAddresses = new LinkedList<String>();
+            dropoffAddresses = new LinkedList<String>();
         }
 
 
         routes.addFirst(route);
         timestamps.addFirst(newTimestamp);
+        pickupAddresses.addFirst(pickupAddress);
+        dropoffAddresses.addFirst(dropoffAddress);
 
-        PdxInstance newCountValue = generateRoutesJson(newCount, routes, timestamps);
+        PdxInstance newCountValue = generateRoutesJson(newCount, routes, pickupAddresses, dropoffAddresses, timestamps);
 
         regionTop.put(newCount, newCountValue);
     }
 
-    private void removeRouteFromOldTop(Region<Integer, PdxInstance> regionTop, String route, Integer originalCount, Long originalTimestamp) throws Exception{
+    private void removeRouteFromOldTop(Region<Integer, PdxInstance> regionTop, String route, String pickupAddress, String dropoffAddress, Integer originalCount, Long originalTimestamp) throws Exception{
 
         PdxInstance pdxObj = regionTop.get(originalCount);
         LinkedList<String> routes = (LinkedList<String>)pdxObj.getField("routes");
         LinkedList<Long> timestamps = (LinkedList<Long>)pdxObj.getField("timestamps");
+        LinkedList<String> pickupAddresses = (LinkedList<String>)pdxObj.getField("pickup_addresses");
+        LinkedList<String> dropoffAddresses = (LinkedList<String>)pdxObj.getField("dropoff_addresses");
 
         routes.remove(route);
         timestamps.remove(originalTimestamp);
-
+        pickupAddresses.remove(pickupAddress);
+        dropoffAddresses.remove(dropoffAddress);
 
         if (routes.size() == 0)
         {
@@ -127,13 +143,13 @@ public class RegionProcessor {
 
         }
         else {
-            PdxInstance newPdxObj = generateRoutesJson(originalCount, routes, timestamps);
+            PdxInstance newPdxObj = generateRoutesJson(originalCount, routes, pickupAddresses, dropoffAddresses, timestamps);
             regionTop.replace(originalCount, newPdxObj);
         }
     }
 
 
-    public void processRegionTopTen(String keyRoute, String keyUuid, Integer keyCount, Long keyTimestamp, Boolean incremental) throws Exception{
+    public void processRegionTopTen(String keyRoute, String keyPickupAddress, String keyDropoffAddress, String keyUuid, Integer keyCount, Long keyTimestamp, Boolean incremental) throws Exception{
         JSONObject toptenJson = new JSONObject();
 
         Set<Integer> keySet = regionTop.keySet();
@@ -157,23 +173,32 @@ public class RegionProcessor {
             Integer key = iter.next();
             PdxInstance regionTopValue = regionTop.get(key);
             LinkedList<String> routes = (LinkedList<String>)regionTopValue.getField("routes");
-            ListIterator<String> listIterator = routes.listIterator();
+            LinkedList<String> pickupAddresses = (LinkedList<String>)regionTopValue.getField("pickup_addresses");
+            LinkedList<String> dropoffAddresses = (LinkedList<String>)regionTopValue.getField("dropoff_addresses");
+            ListIterator<String> routesIterator = routes.listIterator();
+            ListIterator<String> pickupAddressesIterator = pickupAddresses.listIterator();
+            ListIterator<String> dropoffAddressesIterator = dropoffAddresses.listIterator();
 
-            while (listIterator.hasNext()) {
+            while (routesIterator.hasNext()) {
 
                 rank++;
 
-                String route = listIterator.next();
+                String route = routesIterator.next();
                 String[] routeArray = route.split("_");
-                String fromCellValue = routeArray[0];
-                String toCellValue = routeArray[1];
+                String fromCode = routeArray[0];
+                String toCode = routeArray[1];
+
+                String pickupAddress = pickupAddressesIterator.next();
+                String dropoffAddress = dropoffAddressesIterator.next();
 
                 // top ten list element
                 JSONObject topTenElement = new JSONObject();
                 topTenElement.put("rank", rank);
                 topTenElement.put("count", key);
-                topTenElement.put("from", fromCellValue);
-                topTenElement.put("to", toCellValue);
+                topTenElement.put("from_code", fromCode);
+                topTenElement.put("to_code", toCode);
+                topTenElement.put("from", pickupAddress);
+                topTenElement.put("to", dropoffAddress);
 
                 topTenList.addLast(topTenElement);
 
@@ -182,8 +207,10 @@ public class RegionProcessor {
                 JSONObject toNodeElement = new JSONObject();
                 JSONObject linkElement = new JSONObject();
 
-                fromNodeElement.put("name", fromCellValue);
-                toNodeElement.put("name", toCellValue);
+                fromNodeElement.put("code", fromCode);
+                fromNodeElement.put("name", pickupAddress);
+                toNodeElement.put("code", toCode);
+                toNodeElement.put("name", dropoffAddress);
 
                 Integer fromPosition = addNodeToNodes(nodes, fromNodeElement);
                 Integer toPosition = addNodeToNodes(nodes, toNodeElement);
@@ -210,11 +237,13 @@ public class RegionProcessor {
 
         Long delay = (Calendar.getInstance().getTimeInMillis() - keyTimestamp);
         String[] crtRouteArray = keyRoute.split("_");
-        String crtFromCellValue = crtRouteArray[0];
-        String crtToCellValue = crtRouteArray[1];
+        String crtFromCode = crtRouteArray[0];
+        String crtToCode = crtRouteArray[1];
 
-        toptenJson.put("from", crtFromCellValue);
-        toptenJson.put("to", crtToCellValue);
+        toptenJson.put("from_code", crtFromCode);
+        toptenJson.put("to_code", crtToCode);
+        toptenJson.put("from", keyPickupAddress);
+        toptenJson.put("to", keyDropoffAddress);
         toptenJson.put("count", keyCount);
         toptenJson.put("uuid", keyUuid);
         toptenJson.put("delay", delay);
@@ -239,8 +268,6 @@ public class RegionProcessor {
             regionTopTen.put(1, newRegionTopTenValue);
         }
 
-//        PdxInstance newRegionTopTenValue = JSONFormatter.fromJSON(toptenJson.toString());
-//        regionTopTen.put(1, newRegionTopTenValue);
     }
 
     private Integer addNodeToNodes(LinkedList<JSONObject> nodes, JSONObject nodeElement) throws Exception{
@@ -248,7 +275,7 @@ public class RegionProcessor {
         for(int num=0; num < nodes.size(); num++) {
             JSONObject crtNode = nodes.get(num);
 
-            if (crtNode.getString("name").equals(nodeElement.getString("name"))) {
+            if (crtNode.getString("code").equals(nodeElement.getString("code"))) {
                 return num;
             }
         }
@@ -292,11 +319,11 @@ public class RegionProcessor {
                     return true;
                 }
 
-                if (!crtTopTenElement.getString("from").equals(newTopTenElement.getString("from"))) {
+                if (!crtTopTenElement.getString("from_code").equals(newTopTenElement.getString("from_code"))) {
                     return true;
                 }
 
-                if (!crtTopTenElement.getString("to").equals(newTopTenElement.getString("to"))) {
+                if (!crtTopTenElement.getString("to_code").equals(newTopTenElement.getString("to_code"))) {
                     return true;
                 }
             }
