@@ -51,13 +51,13 @@ public class GeodeProperties {
 
     private String useLocator;
 
-    private Integer batchSize = 100;
+    private Integer batchSize = 20;
 
-    private Integer batchTimeInterval = 2000;
+    private Integer batchTimeInterval = 1000;
 
     private Integer dispatcherThreads = 1;
 
-    private Integer timeout = 120;
+    private Integer timeout = 1200;
 
     public void setDispatcherThreads(Integer dispatcherThreads) {
         this.dispatcherThreads = dispatcherThreads;

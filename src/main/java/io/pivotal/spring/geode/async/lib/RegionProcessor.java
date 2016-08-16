@@ -113,11 +113,15 @@ public class RegionProcessor {
             dropoffAddresses = new LinkedList<String>();
         }
 
+       // routes.addFirst(route);
+       // timestamps.addFirst(newTimestamp);
+       // pickupAddresses.addFirst(pickupAddress);
+       // dropoffAddresses.addFirst(dropoffAddress);
 
-        routes.addFirst(route);
-        timestamps.addFirst(newTimestamp);
-        pickupAddresses.addFirst(pickupAddress);
-        dropoffAddresses.addFirst(dropoffAddress);
+        routes.addLast(route);
+        timestamps.addLast(newTimestamp);
+        pickupAddresses.addLast(pickupAddress);
+        dropoffAddresses.addLast(dropoffAddress);
 
         PdxInstance newCountValue = generateRoutesJson(newCount, routes, pickupAddresses, dropoffAddresses, timestamps);
 

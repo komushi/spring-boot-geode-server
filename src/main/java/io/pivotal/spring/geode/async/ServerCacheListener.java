@@ -40,6 +40,8 @@ public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implemen
 
                 // count & top process
                 String route = (String)raw.getField("route");
+                String pickupAddress = (String)raw.getField("pickupAddress");
+                String dropoffAddress = (String)raw.getField("dropoffAddress");
                 Long newTimestamp = (Long)raw.getField("timestamp");
 
                 Integer originalCount = 0 ;
@@ -71,14 +73,18 @@ public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implemen
                 Long keyTimestamp = 0L;
                 String keyUuid = "";
                 String keyRoute = "";
+                String keyPickupAddress = "";
+                String keyDropoffAddress = "";
                 Integer keyCount = 0;
                 Boolean incremental = false;
 
 
 
-                processor.processRegionCount(route, originalCount, originalTimestamp, newCount, newTimestamp);
+//                processor.processRegionCount(route, originalCount, originalTimestamp, newCount, newTimestamp);
+                processor.processRegionCount(route, pickupAddress, dropoffAddress, originalCount, originalTimestamp, newCount, newTimestamp);
 
-                processor.processRegionTop(route, originalCount, originalTimestamp, newCount, newTimestamp);
+//                processor.processRegionTop(route, originalCount, originalTimestamp, newCount, newTimestamp);
+                processor.processRegionTop(route, pickupAddress, dropoffAddress, originalCount, originalTimestamp, newCount, newTimestamp);
 
                 if (newCount < originalCount) {
 
@@ -86,10 +92,13 @@ public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implemen
                         keyTimestamp = (Long)raw.getField("timestamp");
                         keyUuid = (String)raw.getField("uuid");
                         keyRoute = route;
+                        keyPickupAddress = pickupAddress;
+                        keyDropoffAddress = dropoffAddress;
                         keyCount = newCount;
                         incremental = false;
 
-                        processor.processRegionTopTen(keyRoute, keyUuid, keyCount, keyTimestamp, incremental);
+//                        processor.processRegionTopTen(keyRoute, keyUuid, keyCount, keyTimestamp, incremental);
+                        processor.processRegionTopTen(keyRoute, keyPickupAddress, keyDropoffAddress, keyUuid, keyCount, keyTimestamp, incremental);
                     }
                 }
 
