@@ -11,49 +11,51 @@ import java.util.*;
 /**
  * Created by lei_xu on 7/21/16.
  */
-public class RegionProcessor {
+public class RouteProcessor {
 
-    private Region regionCount;
-    private Region<Integer, PdxInstance> regionTop;
-    private Region regionTopTen;
+    private Region regRouteCount;
+    private Region<Integer, PdxInstance> regRouteTop;
+    private Region regRouteTopTen;
 
-    public RegionProcessor(Region regionCount, Region<Integer, PdxInstance> regionTop, Region regionTopTen) {
-        this.regionCount = regionCount;
-        this.regionTop = regionTop;
-        this.regionTopTen = regionTopTen;
+    public RouteProcessor(Region regRouteCount, Region<Integer, PdxInstance> regRouteTop, Region regRouteTopTen) {
+        this.regRouteCount = regRouteCount;
+        this.regRouteTop = regRouteTop;
+        this.regRouteTopTen = regRouteTopTen;
     }
 
-    public void processRegionCount(String route, String pickupAddress, String dropoffAddress, Integer originalCount, Long originalTimestamp, Integer newCount, Long newTimestamp) throws Exception{
-        // process RegionCount
+    public void processRouteCount(String route, String pickupAddress, String dropoffAddress, Integer originalCount, Integer newCount, Long newTimestamp) throws Exception{
+        // process RegRouteCount
 
         if (newCount == 0) {
-            regionCount.destroy(route);
+            regRouteCount.destroy(route);
         } else {
-            JSONObject jsonObj = new JSONObject().put("route", route).put("pickup_address", pickupAddress).put("dropoff_address", dropoffAddress).put("route_count", newCount).put("timestamp", newTimestamp);
+            JSONObject jsonObj = new JSONObject().put("route", route)
+                    .put("pickup_address", pickupAddress).put("dropoff_address", dropoffAddress)
+                    .put("route_count", newCount).put("timestamp", newTimestamp);
             PdxInstance entryValue = JSONFormatter.fromJSON(jsonObj.toString());
 
             if(originalCount == 0){
-                regionCount.putIfAbsent(route, entryValue);
+                regRouteCount.putIfAbsent(route, entryValue);
             }
             else
             {
-                regionCount.put(route, entryValue);
+                regRouteCount.put(route, entryValue);
             }
         }
     }
 
-    public void processRegionTop(String route, String pickupAddress, String dropoffAddress, Integer originalCount, Long originalTimestamp, Integer newCount, Long newTimestamp) throws Exception{
+    public void processRouteTop(String route, String pickupAddress, String dropoffAddress, Integer originalCount, Long originalTimestamp, Integer newCount, Long newTimestamp) throws Exception{
 
         if (newCount > originalCount) {
 
             // add to new entry
-            addRouteToTop(regionTop, route, pickupAddress, dropoffAddress, newCount, newTimestamp);
+            addRouteToTop(regRouteTop, route, pickupAddress, dropoffAddress, newCount, newTimestamp);
 
 
             if (originalCount != 0) {
 
                 // remove from old entry
-                removeRouteFromOldTop(regionTop, route, pickupAddress, dropoffAddress, originalCount, originalTimestamp);
+                removeRouteFromOldTop(regRouteTop, route, pickupAddress, dropoffAddress, originalCount, originalTimestamp);
             }
 
         }
@@ -62,12 +64,12 @@ public class RegionProcessor {
             // https://issues.apache.org/jira/browse/GEODE-1209
             if (newCount != 0) {
                 // add to new entry
-                addRouteToTop(regionTop, route, pickupAddress, dropoffAddress, newCount, newTimestamp);
+                addRouteToTop(regRouteTop, route, pickupAddress, dropoffAddress, newCount, newTimestamp);
 
             }
 
             // add to new entry
-            removeRouteFromOldTop(regionTop, route, pickupAddress, dropoffAddress, originalCount, originalTimestamp);
+            removeRouteFromOldTop(regRouteTop, route, pickupAddress, dropoffAddress, originalCount, originalTimestamp);
 
         }
 
@@ -89,14 +91,14 @@ public class RegionProcessor {
 
     }
 
-    private void addRouteToTop(Region<Integer, PdxInstance> regionTop, String route, String pickupAddress, String dropoffAddress, Integer newCount, Long newTimestamp) throws Exception{
+    private void addRouteToTop(Region<Integer, PdxInstance> regRouteTop, String route, String pickupAddress, String dropoffAddress, Integer newCount, Long newTimestamp) throws Exception{
 //        System.out.println("RawChangeListener: addRouteToTop " + route + " " + newCount);
 
         LinkedList<String> routes = null;
         LinkedList<Long> timestamps = null;
         LinkedList<String> pickupAddresses = null;
         LinkedList<String> dropoffAddresses = null;
-        PdxInstance pdxObj = regionTop.get(newCount);
+        PdxInstance pdxObj = regRouteTop.get(newCount);
 
         if (pdxObj != null)
         {
@@ -125,12 +127,12 @@ public class RegionProcessor {
 
         PdxInstance newCountValue = generateRoutesJson(newCount, routes, pickupAddresses, dropoffAddresses, timestamps);
 
-        regionTop.put(newCount, newCountValue);
+        regRouteTop.put(newCount, newCountValue);
     }
 
-    private void removeRouteFromOldTop(Region<Integer, PdxInstance> regionTop, String route, String pickupAddress, String dropoffAddress, Integer originalCount, Long originalTimestamp) throws Exception{
+    private void removeRouteFromOldTop(Region<Integer, PdxInstance> regRouteTop, String route, String pickupAddress, String dropoffAddress, Integer originalCount, Long originalTimestamp) throws Exception{
 
-        PdxInstance pdxObj = regionTop.get(originalCount);
+        PdxInstance pdxObj = regRouteTop.get(originalCount);
         LinkedList<String> routes = (LinkedList<String>)pdxObj.getField("routes");
         LinkedList<Long> timestamps = (LinkedList<Long>)pdxObj.getField("timestamps");
         LinkedList<String> pickupAddresses = (LinkedList<String>)pdxObj.getField("pickup_addresses");
@@ -143,20 +145,20 @@ public class RegionProcessor {
 
         if (routes.size() == 0)
         {
-            regionTop.destroy(originalCount);
+            regRouteTop.destroy(originalCount);
 
         }
         else {
             PdxInstance newPdxObj = generateRoutesJson(originalCount, routes, pickupAddresses, dropoffAddresses, timestamps);
-            regionTop.replace(originalCount, newPdxObj);
+            regRouteTop.replace(originalCount, newPdxObj);
         }
     }
 
 
-    public void processRegionTopTen(String keyRoute, String keyPickupAddress, String keyDropoffAddress, String keyUuid, Integer keyCount, Long keyTimestamp, Boolean incremental) throws Exception{
+    public void processRouteTopTen(String keyRoute, String keyPickupAddress, String keyDropoffAddress, String keyUuid, Integer keyCount, Long keyTimestamp, Boolean incremental) throws Exception{
         JSONObject toptenJson = new JSONObject();
 
-        Set<Integer> keySet = regionTop.keySet();
+        Set<Integer> keySet = regRouteTop.keySet();
 
         List<Integer> keyList = new ArrayList<Integer>(keySet);
         Collections.sort(keyList, Collections.reverseOrder());
@@ -175,7 +177,7 @@ public class RegionProcessor {
         for (Iterator<Integer> iter = keyList.iterator(); iter.hasNext();) {
 
             Integer key = iter.next();
-            PdxInstance regionTopValue = regionTop.get(key);
+            PdxInstance regionTopValue = regRouteTop.get(key);
             LinkedList<String> routes = (LinkedList<String>)regionTopValue.getField("routes");
             LinkedList<String> pickupAddresses = (LinkedList<String>)regionTopValue.getField("pickup_addresses");
             LinkedList<String> dropoffAddresses = (LinkedList<String>)regionTopValue.getField("dropoff_addresses");
@@ -265,11 +267,11 @@ public class RegionProcessor {
 
 
         PdxInstance newRegionTopTenValue = JSONFormatter.fromJSON(toptenJson.toString());
-        PdxInstance crtRegionTopTenValue = (PdxInstance)regionTopTen.get(1);
+        PdxInstance crtRegionTopTenValue = (PdxInstance)regRouteTopTen.get(1);
 
         if (differTopTen(crtRegionTopTenValue, newRegionTopTenValue))
         {
-            regionTopTen.put(1, newRegionTopTenValue);
+            regRouteTopTen.put(1, newRegionTopTenValue);
         }
 
     }

@@ -94,8 +94,8 @@ public class GeodeCacheServerConfiguration {
     }
 
 
-    // RegionRaw Configurations
-    @Bean(name = "RegionRaw")
+    // RegRaw Configurations
+    @Bean(name = "RegRaw")
     PartitionedRegionFactoryBean<String, Object> rawRegion(Cache gemfireCache,
                                                            @Qualifier("rawRegionAttributes") RegionAttributes<String, Object> rawRegionAttributes)
     {
@@ -104,7 +104,7 @@ public class GeodeCacheServerConfiguration {
         rawRegion.setCache(gemfireCache);
         rawRegion.setClose(false);
         rawRegion.setAttributes(rawRegionAttributes);
-        rawRegion.setName("RegionRaw");
+        rawRegion.setName("RegRaw");
         rawRegion.setPersistent(false);
 
         return rawRegion;
@@ -160,45 +160,59 @@ public class GeodeCacheServerConfiguration {
         return asyncEventQueue;
     }
 
-    // RegionCount Configurations
-    @Bean(name = "RegionCount")
-    PartitionedRegionFactoryBean<String, Integer> countRegion(Cache gemfireCache)
+    // RegRouteCount Configurations
+    @Bean(name = "RegRouteCount")
+    PartitionedRegionFactoryBean<String, Integer> routeCountRegion(Cache gemfireCache)
     {
-        PartitionedRegionFactoryBean<String, Integer> countRegion = new PartitionedRegionFactoryBean<>();
+        PartitionedRegionFactoryBean<String, Integer> routeCountRegion = new PartitionedRegionFactoryBean<>();
 
-        countRegion.setCache(gemfireCache);
-        countRegion.setClose(false);
-        countRegion.setName("RegionCount");
-        countRegion.setPersistent(false);
+        routeCountRegion.setCache(gemfireCache);
+        routeCountRegion.setClose(false);
+        routeCountRegion.setName("RegRouteCount");
+        routeCountRegion.setPersistent(false);
 
-        return countRegion;
+        return routeCountRegion;
     }
 
-    // RegionTop Configurations
-    @Bean(name = "RegionTop")
-    PartitionedRegionFactoryBean<Integer, Object> topRegion(Cache gemfireCache)
+    // RegRouteTop Configurations
+    @Bean(name = "RegRouteTop")
+    PartitionedRegionFactoryBean<Integer, Object> routeTopRegion(Cache gemfireCache)
     {
-        PartitionedRegionFactoryBean<Integer, Object> topRegion = new PartitionedRegionFactoryBean<>();
+        PartitionedRegionFactoryBean<Integer, Object> routeTopRegion = new PartitionedRegionFactoryBean<>();
 
-        topRegion.setCache(gemfireCache);
+        routeTopRegion.setCache(gemfireCache);
 //        topRegion.setClose(false);
-        topRegion.setName("RegionTop");
-        topRegion.setPersistent(false);
+        routeTopRegion.setName("RegRouteTop");
+        routeTopRegion.setPersistent(false);
 
-        return topRegion;
+        return routeTopRegion;
     }
 
-    // RegionTopTen Configurations
-    @Bean(name = "RegionTopTen")
-    PartitionedRegionFactoryBean<Integer, Object> topTenRegion(Cache gemfireCache)
+    // RegRouteTopTen Configurations
+    @Bean(name = "RegRouteTopTen")
+    PartitionedRegionFactoryBean<Integer, Object> routeToptenRegion(Cache gemfireCache)
     {
-        PartitionedRegionFactoryBean<Integer, Object> topTenRegion = new PartitionedRegionFactoryBean<>();
+        PartitionedRegionFactoryBean<Integer, Object> routeToptenRegion = new PartitionedRegionFactoryBean<>();
 
-        topTenRegion.setCache(gemfireCache);
+        routeToptenRegion.setCache(gemfireCache);
 //        topTenRegion.setClose(false);
-        topTenRegion.setName("RegionTopTen");
-        topTenRegion.setPersistent(false);
+        routeToptenRegion.setName("RegRouteTopTen");
+        routeToptenRegion.setPersistent(false);
 
-        return topTenRegion;
+        return routeToptenRegion;
     }
+
+    // RegDistrictCount Configurations
+    @Bean(name = "RegDistrictCount")
+    PartitionedRegionFactoryBean<String, Object> districtCountRegion(Cache gemfireCache)
+    {
+        PartitionedRegionFactoryBean<String, Object> districtCountRegion = new PartitionedRegionFactoryBean<>();
+
+        districtCountRegion.setCache(gemfireCache);
+        districtCountRegion.setName("RegDistrictCount");
+        districtCountRegion.setPersistent(false);
+
+        return districtCountRegion;
+    }
+
 }

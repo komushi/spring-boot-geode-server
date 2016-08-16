@@ -4,7 +4,8 @@ import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.pdx.PdxInstance;
-import io.pivotal.spring.geode.async.lib.RegionProcessor;
+import io.pivotal.spring.geode.async.lib.DistrictProcessor;
+import io.pivotal.spring.geode.async.lib.RouteProcessor;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -16,30 +17,36 @@ import java.util.Properties;
 public class RawAsyncEventListener implements AsyncEventListener, Declarable {
 
     private GemFireCache gemFireCache;
-    private Region regionCount;
-//    private Region regionRaw = gemFireCache.getRegion("RegionRaw");
-    private Region<Integer, PdxInstance> regionTop;
-    private Region regionTopTen;
+
+    // route process
+    private Region regRouteCount;
+    private Region<Integer, PdxInstance> regRouteTop;
+    private Region regRouteTopTen;
+
+    // district process
+    private Region regDistrictCount;
+    private Region regPickupDistrictTop;
+    private Region regDropoffDistrictTop;
 
     @Override
     public boolean processEvents(List<AsyncEvent> events) {
 
-//        GemFireCache gemFireCache = CacheFactory.getAnyInstance();
-//        Region regionCount = gemFireCache.getRegion("RegionCount");
-//        Region<Integer, PdxInstance> regionTop = gemFireCache.getRegion("RegionTop");
-//        Region regionTopTen = gemFireCache.getRegion("RegionTopTen");
-
         gemFireCache = CacheFactory.getAnyInstance();
-        regionCount = gemFireCache.getRegion("RegionCount");
-        regionTop = gemFireCache.getRegion("RegionTop");
-        regionTopTen = gemFireCache.getRegion("RegionTopTen");
 
-        RegionProcessor processor = new RegionProcessor(regionCount, regionTop, regionTopTen);
+        // for route process
+        regRouteCount = gemFireCache.getRegion("RegRouteCount");
+        regRouteTop = gemFireCache.getRegion("RegRouteTop");
+        regRouteTopTen = gemFireCache.getRegion("RegRouteTopTen");
+        RouteProcessor routeProcessor = new RouteProcessor(regRouteCount, regRouteTop, regRouteTopTen);
+
+        // for district process
+        regDistrictCount = gemFireCache.getRegion("RegDistrictCount");
+        DistrictProcessor districtProcessor = new DistrictProcessor(regDistrictCount, regDropoffDistrictTop);
 
         Integer smallestToptenCount = 0;
         Boolean isProcessTopTen = false;
 
-        PdxInstance topTenValue = (PdxInstance)regionTopTen.get(1);
+        PdxInstance topTenValue = (PdxInstance)regRouteTopTen.get(1);
         if (topTenValue != null) {
             LinkedList toptenList = (LinkedList)topTenValue.getField("toptenlist");
             if (toptenList.size() != 0) {
@@ -52,7 +59,7 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
         String keyRoute = "";
         String keyPickupAddress = "";
         String keyDropoffAddress = "";
-        Integer keyCount = 0;
+        Integer keyRouteCount = 0;
         Boolean incremental = true;
 
         System.out.println("new events, events.size:" + events.size());
@@ -75,39 +82,39 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
                 }
 
                 PdxInstance raw = (PdxInstance) event.getDeserializedValue();
+                Long newTimestamp = (Long)raw.getField("timestamp");
 
+                /* route process */
                 // get route from the key in JSON format
                 String route = (String)raw.getField("route");
                 String pickupAddress = (String)raw.getField("pickupAddress");
                 String dropoffAddress = (String)raw.getField("dropoffAddress");
-                Long newTimestamp = (Long)raw.getField("timestamp");
 
-                Integer originalCount = 0 ;
-                Integer newCount = 0;
-                Long originalTimestamp = 0L;
+                Integer originalRouteCount = 0 ;
+                Integer newRouteCount = 0;
+                Long originalRouteTimestamp = 0L;
 
-                PdxInstance originCountValue = (PdxInstance)regionCount.get(route);
+                PdxInstance originRouteCountValue = (PdxInstance)regRouteCount.get(route);
 
-                if(originCountValue==null){
-                    newCount = 1;
+                if(originRouteCountValue==null){
+                    newRouteCount = 1;
                 }
                 else
                 {
-                    originalCount = ((Byte)originCountValue.getField("route_count")).intValue();
-                    originalTimestamp = (Long)originCountValue.getField("timestamp");
-                    newCount = originalCount + countDiff;
+                    originalRouteCount = ((Byte)originRouteCountValue.getField("route_count")).intValue();
+                    originalRouteTimestamp = (Long)originRouteCountValue.getField("timestamp");
+                    newRouteCount = originalRouteCount + countDiff;
                 }
 
-//                processRegionCount(regionCount, route, originalCount, originalTimestamp, newCount, newTimestamp);
-                processor.processRegionCount(route, pickupAddress, dropoffAddress, originalCount, originalTimestamp, newCount, newTimestamp);
+//                processRegionCount(regRouteCount, route, originalCount, originalTimestamp, newCount, newTimestamp);
+                routeProcessor.processRouteCount(route, pickupAddress, dropoffAddress, originalRouteCount, newRouteCount, newTimestamp);
 
 //                processRegionTop(regionTop, route, originalCount, originalTimestamp, newCount, newTimestamp);
-                processor.processRegionTop(route, pickupAddress, dropoffAddress, originalCount, originalTimestamp, newCount, newTimestamp);
+                routeProcessor.processRouteTop(route, pickupAddress, dropoffAddress, originalRouteCount, originalRouteTimestamp, newRouteCount, newTimestamp);
 
                 // Check whether need to refresh topten
-                if (newCount > originalCount) {
-
-                    if (newCount >= smallestToptenCount) {
+                if (newRouteCount > originalRouteCount) {
+                    if (newRouteCount >= smallestToptenCount) {
                         isProcessTopTen = Boolean.logicalOr(isProcessTopTen, Boolean.TRUE);
 
                         if (keyRoute.isEmpty()) {
@@ -116,22 +123,68 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
                             keyRoute = route;
                             keyPickupAddress = pickupAddress;
                             keyDropoffAddress = dropoffAddress;
-                            keyCount = newCount;
+                            keyRouteCount = newRouteCount;
                             incremental = true;
                         }
                     }
                 }
-//                else if (newCount < originalCount){
+//                else if (newRouteCount < originalRouteCount){
 //                    // TODO waiting for expiration destroy opertaion to be published in async event
 //                    // https://issues.apache.org/jira/browse/GEODE-1209
-//                    if (originalCount >= smallestToptenCount) {
+//                    if (originalRouteCount >= smallestToptenCount) {
 //                        isProcessTopTen = Boolean.logicalOr(isProcessTopTen, Boolean.TRUE);
 //                    }
 //                }
+                /* route process */
+
+                /* district process */
+                String dropoffDistrict = (String)raw.getField("dropoffDistrict");
+                String dropoffDistrictCode = (String)raw.getField("dropoffDistrictCode");
+                String pickupDistrict = (String)raw.getField("pickupDistrict");
+                String pickupDistrictCode = (String)raw.getField("pickupDistrictCode");
+
+                Integer originalDropoffDistrictCount = 0 ;
+                Integer originalDropoffDistrictAsPickupCount = 0 ;
+                Integer newDropoffDistrictCount  = 0;
+
+                PdxInstance originalDropoffDistrict = (PdxInstance)regDistrictCount.get(dropoffDistrictCode);
+
+                if(originalDropoffDistrict == null){
+                    newDropoffDistrictCount = 1;
+                }
+                else
+                {
+                    originalDropoffDistrictCount = ((Byte)originalDropoffDistrict.getField("dropoffCount")).intValue();
+                    newDropoffDistrictCount = originalDropoffDistrictCount + countDiff;
+                    originalDropoffDistrictAsPickupCount = ((Byte)originalDropoffDistrict.getField("pickupCount")).intValue();
+                }
+
+
+                districtProcessor.processDropoffDistrictCount(dropoffDistrictCode, dropoffDistrict, originalDropoffDistrictCount, originalDropoffDistrictAsPickupCount, newDropoffDistrictCount, newTimestamp);
+
+                Integer originalPickupDistrictCount = 0 ;
+                Integer originalPickupDistrictAsDropoffCount = 0 ;
+                Integer newPickupDistrictCount  = 0;
+
+                PdxInstance originalPickupDistrict = (PdxInstance)regDistrictCount.get(pickupDistrictCode);
+
+                if(originalPickupDistrict == null){
+                    newPickupDistrictCount = 1;
+                }
+                else
+                {
+                    originalPickupDistrictCount = ((Byte)originalPickupDistrict.getField("pickupCount")).intValue();
+                    newPickupDistrictCount = originalPickupDistrictCount + countDiff;
+                    originalPickupDistrictAsDropoffCount = ((Byte)originalPickupDistrict.getField("dropoffCount")).intValue();
+                }
+
+                districtProcessor.processPickupDistrictCount(pickupDistrictCode, pickupDistrict, originalPickupDistrictCount, originalPickupDistrictAsDropoffCount, newPickupDistrictCount, newTimestamp);
+                /* district process */
             }
 
+            // route process
             if (isProcessTopTen) {
-                processor.processRegionTopTen(keyRoute, keyPickupAddress, keyDropoffAddress, keyUuid, keyCount, keyTimestamp, incremental);
+                routeProcessor.processRouteTopTen(keyRoute, keyPickupAddress, keyDropoffAddress, keyUuid, keyRouteCount, keyTimestamp, incremental);
             }
 
         } catch (Exception e) {

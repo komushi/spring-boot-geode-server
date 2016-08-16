@@ -3,7 +3,7 @@ package io.pivotal.spring.geode.async;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.pdx.PdxInstance;
-import io.pivotal.spring.geode.async.lib.RegionProcessor;
+import io.pivotal.spring.geode.async.lib.RouteProcessor;
 
 import java.util.LinkedList;
 import java.util.Properties;
@@ -11,10 +11,10 @@ import java.util.Properties;
 public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implements Declarable {
 
     private GemFireCache gemFireCache;
-    private Region regionCount;
+    private Region regRouteCount;
 
-    private Region<Integer, PdxInstance> regionTop;
-    private Region regionTopTen;
+    private Region<Integer, PdxInstance> regRouteTop;
+    private Region regRouteTopTen;
 
     public void afterDestroy(EntryEvent<K,V> e) {
         try {
@@ -32,11 +32,11 @@ public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implemen
                 Integer countDiff = -1;
 
                 gemFireCache = CacheFactory.getAnyInstance();
-                regionCount = gemFireCache.getRegion("RegionCount");
-                regionTop = gemFireCache.getRegion("RegionTop");
-                regionTopTen = gemFireCache.getRegion("RegionTopTen");
+                regRouteCount = gemFireCache.getRegion("RegRouteCount");
+                regRouteTop = gemFireCache.getRegion("RegRouteTop");
+                regRouteTopTen = gemFireCache.getRegion("RegRouteTopTen");
 
-                RegionProcessor processor = new RegionProcessor(regionCount, regionTop, regionTopTen);
+                RouteProcessor routeProcessor = new RouteProcessor(regRouteCount, regRouteTop, regRouteTopTen);
 
                 // count & top process
                 String route = (String)raw.getField("route");
@@ -48,7 +48,7 @@ public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implemen
                 Integer newCount = 0;
                 Long originalTimestamp = 0L;
 
-                PdxInstance originCountValue = (PdxInstance)regionCount.get(route);
+                PdxInstance originCountValue = (PdxInstance)regRouteCount.get(route);
 
                 if(originCountValue==null){
                     newCount = 1;
@@ -62,7 +62,7 @@ public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implemen
 
                 // top ten process
                 Integer smallestToptenCount = 0;
-                PdxInstance topTenValue = (PdxInstance)regionTopTen.get(1);
+                PdxInstance topTenValue = (PdxInstance)regRouteTopTen.get(1);
                 if (topTenValue != null) {
                     LinkedList toptenList = (LinkedList)topTenValue.getField("toptenlist");
                     if (toptenList.size() != 0) {
@@ -81,10 +81,10 @@ public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implemen
 
 
 //                processor.processRegionCount(route, originalCount, originalTimestamp, newCount, newTimestamp);
-                processor.processRegionCount(route, pickupAddress, dropoffAddress, originalCount, originalTimestamp, newCount, newTimestamp);
+                routeProcessor.processRouteCount(route, pickupAddress, dropoffAddress, originalCount, newCount, newTimestamp);
 
 //                processor.processRegionTop(route, originalCount, originalTimestamp, newCount, newTimestamp);
-                processor.processRegionTop(route, pickupAddress, dropoffAddress, originalCount, originalTimestamp, newCount, newTimestamp);
+                routeProcessor.processRouteTop(route, pickupAddress, dropoffAddress, originalCount, originalTimestamp, newCount, newTimestamp);
 
                 if (newCount < originalCount) {
 
@@ -98,7 +98,7 @@ public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implemen
                         incremental = false;
 
 //                        processor.processRegionTopTen(keyRoute, keyUuid, keyCount, keyTimestamp, incremental);
-                        processor.processRegionTopTen(keyRoute, keyPickupAddress, keyDropoffAddress, keyUuid, keyCount, keyTimestamp, incremental);
+                        routeProcessor.processRouteTopTen(keyRoute, keyPickupAddress, keyDropoffAddress, keyUuid, keyCount, keyTimestamp, incremental);
                     }
                 }
 
