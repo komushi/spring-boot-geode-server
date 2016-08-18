@@ -215,4 +215,16 @@ public class GeodeCacheServerConfiguration {
         return districtCountRegion;
     }
 
+    // RegDropoffDistrictTop Configurations
+    @Bean(name = "RegDropoffDistrictTop")
+    PartitionedRegionFactoryBean<String, Object> dropoffDistrictTopRegion(Cache gemfireCache)
+    {
+        PartitionedRegionFactoryBean<String, Object> dropoffDistrictTopRegion = new PartitionedRegionFactoryBean<>();
+
+        dropoffDistrictTopRegion.setCache(gemfireCache);
+        dropoffDistrictTopRegion.setName("RegDropoffDistrictTop");
+        dropoffDistrictTopRegion.setPersistent(false);
+
+        return dropoffDistrictTopRegion;
+    }
 }

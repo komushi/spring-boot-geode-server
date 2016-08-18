@@ -3,6 +3,7 @@ package io.pivotal.spring.geode.async;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
+//import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import io.pivotal.spring.geode.async.lib.DistrictProcessor;
 import io.pivotal.spring.geode.async.lib.RouteProcessor;
@@ -32,6 +33,10 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
     public boolean processEvents(List<AsyncEvent> events) {
 
         gemFireCache = CacheFactory.getAnyInstance();
+//        CacheTransactionManager tm = gemFireCache.getCacheTransactionManager();
+//        tm.begin();
+//        QueryService queryService = gemFireCache.getQueryService();
+
 
         // for route process
         regRouteCount = gemFireCache.getRegion("RegRouteCount");
@@ -41,6 +46,7 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
 
         // for district process
         regDistrictCount = gemFireCache.getRegion("RegDistrictCount");
+        regDropoffDistrictTop = gemFireCache.getRegion("RegDropoffDistrictTop");
         DistrictProcessor districtProcessor = new DistrictProcessor(regDistrictCount, regDropoffDistrictTop);
 
         Integer smallestToptenCount = 0;
@@ -50,7 +56,8 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
         if (topTenValue != null) {
             LinkedList toptenList = (LinkedList)topTenValue.getField("toptenlist");
             if (toptenList.size() != 0) {
-                smallestToptenCount = ((Byte)((PdxInstance)toptenList.getLast()).getField("count")).intValue();
+//                smallestToptenCount = ((Byte)((PdxInstance)toptenList.getLast()).getField("count")).intValue();
+                smallestToptenCount = Integer.parseInt(((PdxInstance)toptenList.getLast()).getField("count").toString());
             }
         }
 
@@ -101,7 +108,9 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
                 }
                 else
                 {
-                    originalRouteCount = ((Byte)originRouteCountValue.getField("route_count")).intValue();
+//                    originalRouteCount = ((Byte)originRouteCountValue.getField("route_count")).intValue();
+                    originalRouteCount = Integer.parseInt(originRouteCountValue.getField("route_count").toString());
+
                     originalRouteTimestamp = (Long)originRouteCountValue.getField("timestamp");
                     newRouteCount = originalRouteCount + countDiff;
                 }
@@ -154,9 +163,11 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
                 }
                 else
                 {
-                    originalDropoffDistrictCount = ((Byte)originalDropoffDistrict.getField("dropoffCount")).intValue();
+//                    originalDropoffDistrictCount = ((Byte)originalDropoffDistrict.getField("dropoffCount")).intValue();
+                    originalDropoffDistrictCount = Integer.parseInt(originalDropoffDistrict.getField("dropoffCount").toString());
                     newDropoffDistrictCount = originalDropoffDistrictCount + countDiff;
-                    originalDropoffDistrictAsPickupCount = ((Byte)originalDropoffDistrict.getField("pickupCount")).intValue();
+//                    originalDropoffDistrictAsPickupCount = ((Byte)originalDropoffDistrict.getField("pickupCount")).intValue();
+                    originalDropoffDistrictAsPickupCount = Integer.parseInt(originalDropoffDistrict.getField("pickupCount").toString());
                 }
 
 
@@ -173,9 +184,11 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
                 }
                 else
                 {
-                    originalPickupDistrictCount = ((Byte)originalPickupDistrict.getField("pickupCount")).intValue();
+//                    originalPickupDistrictCount = ((Byte)originalPickupDistrict.getField("pickupCount")).intValue();
+                    originalPickupDistrictCount = Integer.parseInt(originalPickupDistrict.getField("pickupCount").toString());
                     newPickupDistrictCount = originalPickupDistrictCount + countDiff;
-                    originalPickupDistrictAsDropoffCount = ((Byte)originalPickupDistrict.getField("dropoffCount")).intValue();
+//                    originalPickupDistrictAsDropoffCount = ((Byte)originalPickupDistrict.getField("dropoffCount")).intValue();
+                    originalPickupDistrictAsDropoffCount = Integer.parseInt(originalPickupDistrict.getField("dropoffCount").toString());
                 }
 
                 districtProcessor.processPickupDistrictCount(pickupDistrictCode, pickupDistrict, originalPickupDistrictCount, originalPickupDistrictAsDropoffCount, newPickupDistrictCount, newTimestamp);
@@ -187,6 +200,14 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
                 routeProcessor.processRouteTopTen(keyRoute, keyPickupAddress, keyDropoffAddress, keyUuid, keyRouteCount, keyTimestamp, incremental);
             }
 
+            districtProcessor.processDropoffDistrictTop(keyTimestamp);
+//            tm.commit();
+
+//        } catch(CommitConflictException e){
+//            e.printStackTrace();
+//            tm.rollback();
+//            System.out.println("-----------------------------CommitConflictException");
+//            return false;
         } catch (Exception e) {
             e.printStackTrace();
         }
