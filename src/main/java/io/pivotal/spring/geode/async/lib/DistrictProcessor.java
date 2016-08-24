@@ -91,13 +91,22 @@ public class DistrictProcessor {
         for (Iterator<PdxInstance> iter = results.iterator(); iter.hasNext();) {
             PdxInstance entryValue = iter.next();
 
-            System.out.print("districtCode:" + entryValue.getField("districtCode"));
-            System.out.print(" district:" + entryValue.getField("district"));
-            System.out.println(" dropoffCount:" + entryValue.getField("dropoffCount").toString());
+            String district = entryValue.getField("district").toString();
+            String districtCode = entryValue.getField("districtCode").toString();
+            Integer dropoffCount = Integer.parseInt(entryValue.getField("dropoffCount").toString());
+
+            System.out.print("districtCode:" + districtCode);
+            System.out.print(" district:" + district);
+            System.out.println(" dropoffCount:" + dropoffCount);
+
+            JSONObject dropoffDistrictElement = new JSONObject();
+            dropoffDistrictElement.put("district", district);
+            dropoffDistrictElement.put("dropoffCount", dropoffCount);
+            dropoffDistrictElement.put("rank", rank++);
 
             // top ten list element
 
-            topList.put(entryValue.getField("districtCode").toString(), rank++);
+            topList.put(entryValue.getField("districtCode").toString(), dropoffDistrictElement);
 
 //            topList.addLast(topTenElement);
         }
