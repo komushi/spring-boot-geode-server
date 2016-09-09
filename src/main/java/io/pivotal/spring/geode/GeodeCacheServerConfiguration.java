@@ -227,4 +227,31 @@ public class GeodeCacheServerConfiguration {
 
         return dropoffDistrictTopRegion;
     }
+
+    // RegDistrictRouteCount Configurations
+    @Bean(name = "RegDistrictRouteCount")
+    PartitionedRegionFactoryBean<String, Integer> districtRouteCountRegion(Cache gemfireCache)
+    {
+        PartitionedRegionFactoryBean<String, Integer> districtRouteCountRegion = new PartitionedRegionFactoryBean<>();
+
+        districtRouteCountRegion.setCache(gemfireCache);
+        districtRouteCountRegion.setClose(false);
+        districtRouteCountRegion.setName("RegDistrictRouteCount");
+        districtRouteCountRegion.setPersistent(false);
+
+        return districtRouteCountRegion;
+    }
+
+    // RegDistrictRouteTop Configurations
+    @Bean(name = "RegDistrictRouteTop")
+    PartitionedRegionFactoryBean<Integer, Object> districtRouteTopRegion(Cache gemfireCache)
+    {
+        PartitionedRegionFactoryBean<Integer, Object> districtRouteTopRegion = new PartitionedRegionFactoryBean<>();
+
+        districtRouteTopRegion.setCache(gemfireCache);
+        districtRouteTopRegion.setName("RegDistrictRouteTop");
+        districtRouteTopRegion.setPersistent(false);
+
+        return districtRouteTopRegion;
+    }
 }

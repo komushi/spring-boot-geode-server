@@ -7,6 +7,7 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import io.pivotal.spring.geode.async.lib.DistrictProcessor;
 import io.pivotal.spring.geode.async.lib.RouteProcessor;
+import io.pivotal.spring.geode.async.lib.DistrictRouteProcessor;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +20,7 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
 
     private GemFireCache gemFireCache;
 
-    // route process
+    // block route process
     private Region regRouteCount;
     private Region<Integer, PdxInstance> regRouteTop;
     private Region regRouteTopTen;
@@ -28,6 +29,11 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
     private Region regDistrictCount;
     private Region regPickupDistrictTop;
     private Region regDropoffDistrictTop;
+
+    // district route process
+    private Region regDistrictRouteCount;
+    private Region<Integer, PdxInstance> regDistrictRouteTop;
+
 
     @Override
     public boolean processEvents(List<AsyncEvent> events) {
@@ -38,7 +44,7 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
 //        QueryService queryService = gemFireCache.getQueryService();
 
 
-        // for route process
+        // for block route process
         regRouteCount = gemFireCache.getRegion("RegRouteCount");
         regRouteTop = gemFireCache.getRegion("RegRouteTop");
         regRouteTopTen = gemFireCache.getRegion("RegRouteTopTen");
@@ -48,6 +54,12 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
         regDistrictCount = gemFireCache.getRegion("RegDistrictCount");
         regDropoffDistrictTop = gemFireCache.getRegion("RegDropoffDistrictTop");
         DistrictProcessor districtProcessor = new DistrictProcessor(regDistrictCount, regDropoffDistrictTop);
+
+        // for district route process
+        regDistrictRouteCount = gemFireCache.getRegion("RegDistrictRouteCount");
+        regDistrictRouteTop = gemFireCache.getRegion("RegDistrictRouteTop");
+        DistrictRouteProcessor districtRouteProcessor = new DistrictRouteProcessor(regDistrictRouteCount, regDistrictRouteTop);
+
 
         Integer smallestToptenCount = 0;
         Boolean isProcessTopTen = false;
@@ -73,7 +85,9 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
         try {
             for (AsyncEvent event : events) {
 
-
+                ///////////////////////////////////////////////////////////////////////////
+                //////////////////////////// get event data ///////////////////////////////
+                ///////////////////////////////////////////////////////////////////////////
                 Operation operation = event.getOperation();
                 Integer countDiff = 0;
 
@@ -91,7 +105,10 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
                 PdxInstance raw = (PdxInstance) event.getDeserializedValue();
                 Long newTimestamp = (Long)raw.getField("timestamp");
 
-                /* route process */
+
+                ///////////////////////////////////////////////////////////////////////////
+                ///////////////////////// block route process /////////////////////////////
+                ///////////////////////////////////////////////////////////////////////////
                 // get route from the key in JSON format
                 String route = (String)raw.getField("route");
                 String pickupAddress = (String)raw.getField("pickupAddress");
@@ -144,9 +161,10 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
 //                        isProcessTopTen = Boolean.logicalOr(isProcessTopTen, Boolean.TRUE);
 //                    }
 //                }
-                /* route process */
 
-                /* district process */
+                ///////////////////////////////////////////////////////////////////////////
+                /////////////////////////// district process //////////////////////////////
+                ///////////////////////////////////////////////////////////////////////////
                 String dropoffDistrict = (String)raw.getField("dropoffDistrict");
                 String dropoffDistrictCode = (String)raw.getField("dropoffDistrictCode");
                 String pickupDistrict = (String)raw.getField("pickupDistrict");
@@ -192,14 +210,43 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
                 }
 
                 districtProcessor.processPickupDistrictCount(pickupDistrictCode, pickupDistrict, originalPickupDistrictCount, originalPickupDistrictAsDropoffCount, newPickupDistrictCount, newTimestamp);
-                /* district process */
+
+                ///////////////////////////////////////////////////////////////////////////
+                ///////////////////////// district route process //////////////////////////
+                ///////////////////////////////////////////////////////////////////////////
+                String districtRoute = pickupDistrictCode + "_" + dropoffDistrictCode;
+
+                Integer originalDistrictRouteCount = 0 ;
+                Integer newDistrictRouteCount = 0;
+                Long originalDistrictRouteTimestamp = 0L;
+
+                PdxInstance originDistrictRouteCountValue = (PdxInstance)regDistrictRouteCount.get(districtRoute);
+
+                if(originDistrictRouteCountValue==null){
+                    newDistrictRouteCount = 1;
+                }
+                else
+                {
+                    originalRouteCount = Integer.parseInt(originDistrictRouteCountValue.getField("route_count").toString());
+
+                    originalDistrictRouteTimestamp = (Long)originDistrictRouteCountValue.getField("timestamp");
+                    newDistrictRouteCount = originalDistrictRouteCount + countDiff;
+                }
+
+                districtRouteProcessor.processRouteCount(districtRoute, pickupDistrict, dropoffDistrict,
+                        originalRouteCount, newDistrictRouteCount, newTimestamp);
             }
 
-            // route process
+            ///////////////////////////////////////////////////////////////////////////
+            ///////////////////////// top block routes process ////////////////////////
+            ///////////////////////////////////////////////////////////////////////////
             if (isProcessTopTen) {
                 routeProcessor.processRouteTopTen(keyRoute, keyPickupAddress, keyDropoffAddress, keyUuid, keyRouteCount, keyTimestamp, incremental);
             }
 
+            ///////////////////////////////////////////////////////////////////////////
+            /////////////////////////// top district process //////////////////////////
+            ///////////////////////////////////////////////////////////////////////////
             districtProcessor.processDropoffDistrictTop(keyTimestamp);
 //            tm.commit();
 
