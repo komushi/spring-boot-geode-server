@@ -21,7 +21,8 @@ public class GeodeProperties {
 
     private static final String DEFAULT_LOCATOR_ADDRESS = "localhost[10334]";
 
-    private static final String DEFAULT_START_JMX = "false";
+    // private static final String DEFAULT_START_JMX = "false";
+    private static final String DEFAULT_START_JMX = "true";
 
     private static final String DEFAULT_USE_JMX = "true";
 
