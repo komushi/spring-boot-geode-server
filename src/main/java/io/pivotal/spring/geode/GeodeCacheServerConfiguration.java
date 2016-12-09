@@ -43,9 +43,10 @@ public class GeodeCacheServerConfiguration {
 
         geodeCacheServer.setCache(gemfireCache);
         geodeCacheServer.setAutoStartup(properties.getAutoStartup());
-        geodeCacheServer.setBindAddress(properties.getBindAddress());
-        geodeCacheServer.setHostNameForClients(properties.getHostNameForClients());
+        // geodeCacheServer.setBindAddress(properties.getBindAddress());
+        // geodeCacheServer.setHostNameForClients(properties.getHostNameForClients());
         // geodeCacheServer.setPort(properties.getCacheServerPort());
+        geodeCacheServer.setBindAddress("0.0.0.0");
         geodeCacheServer.setMaxConnections(properties.getMaxConnections());
 
         return geodeCacheServer;

@@ -57,21 +57,9 @@ Run it with java cli to test with gfsh.
 java -jar target/spring-boot-geode-server-0.0.1-SNAPSHOT.jar
 ```
 
-## 3. Run with Spring Cloud Data Flow Local Server
+## 3. Run with docker deployment
 
-```
-app register --name gemfire --type sink --uri file://<local_file_location>/gemfire-sink-rabbit-1.0.2.RELEASE.jar
-
-stream create http2gem --definition "http --server.port=9000 | gemfire --regionName=RegionRaw --json=true --keyExpression=payload.getField('uuid')" --deploy
-
-http post --target http://localhost:9000 --contentType "application/json" --data "{\"uuid\":\"7a49cba6-d3fc-47a4-8e1a-c2503b8144e1\",\"route\":\"C161.137_C163.155\",\"timestamp\":1466087441276,\"pickupLatitude\":40.860326,\"pickupLongitude\":-73.967758,\"dropoffLatitude\":40.779728,\"dropoffLongitude\":-73.955383,\"pickupDatetime\":\"2013-01-01 00:00:00\",\"dropoffDatetime\":\"2013-01-01 00:04:00\"}"
-
-http post --target http://localhost:9000 --contentType "application/json" --data "{\"uuid\":\"7a49cba6-d3fc-47a4-8e1a-c2503b8144e3\",\"route\":\"C161.139_C163.155\",\"timestamp\":1466087441276,\"pickupLatitude\":40.860326,\"pickupLongitude\":-73.967758,\"dropoffLatitude\":40.779728,\"dropoffLongitude\":-73.955383,\"pickupDatetime\":\"2013-01-01 00:00:00\",\"dropoffDatetime\":\"2013-01-01 00:04:00\"}"
-```
-
-## 4. Run with docker deployment
-
-### 4.1 Option 1: pull & run
+### 3.1 Option 1: pull & run
 ```
 docker run -p 1099:1099 -p 40404:40404 -p 10334:10334 komushi/spring-boot-geode-server --properties.hostNameForClients=192.168.11.111
 ```
@@ -80,7 +68,7 @@ docker run -p 1099:1099 -p 40404:40404 -p 10334:10334 komushi/spring-boot-geode-
 docker run -p 1099:1099 -p 40404:40404 -p 10334:10334 komushi/spring-boot-geode-server --properties.startJmx=true
 ```
 
-### 4.2 Option 2: build & run
+### 3.2 Option 2: build & run
 
 ```
 mvn clean package
