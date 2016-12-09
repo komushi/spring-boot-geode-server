@@ -1,8 +1,8 @@
 package io.pivotal.spring.geode.async;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.pdx.PdxInstance;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.pdx.PdxInstance;
 import io.pivotal.spring.geode.async.lib.RouteProcessor;
 
 import java.util.LinkedList;

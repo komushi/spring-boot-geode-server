@@ -2,7 +2,7 @@ package io.pivotal.spring.geode;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAction;
 
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,9 +19,9 @@ import org.springframework.data.gemfire.ExpirationAttributesFactoryBean;
 import org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean;
 
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.ExpirationAttributes;
 
 import io.pivotal.spring.geode.async.RawAsyncEventListener;
 import io.pivotal.spring.geode.async.ServerCacheListener;

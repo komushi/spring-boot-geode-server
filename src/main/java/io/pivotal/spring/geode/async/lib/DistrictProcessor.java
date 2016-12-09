@@ -1,13 +1,13 @@
 package io.pivotal.spring.geode.async.lib;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.management.internal.beans.stats.IntegerStatsDeltaAggregator;
-import com.gemstone.gemfire.pdx.JSONFormatter;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import org.json.JSONException;
+import org.apache.geode.cache.Region;
+//import org.apache.geode.cache.query.Query;
+//import com.gemstone.gemfire.management.internal.beans.stats.IntegerStatsDeltaAggregator;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
+//import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+//import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.*;

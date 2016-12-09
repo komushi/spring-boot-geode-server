@@ -1,8 +1,8 @@
 package io.pivotal.spring.geode.async.lib;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.pdx.JSONFormatter;
-import com.gemstone.gemfire.pdx.PdxInstance;
+import org.apache.geode.cache.Region;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
 import org.json.JSONException;
 import org.json.JSONObject;
 

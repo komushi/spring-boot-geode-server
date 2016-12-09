@@ -1,10 +1,10 @@
 package io.pivotal.spring.geode.async;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 //import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxInstance;
 import io.pivotal.spring.geode.async.lib.DistrictProcessor;
 import io.pivotal.spring.geode.async.lib.RouteProcessor;
 import io.pivotal.spring.geode.async.lib.DistrictRouteProcessor;
