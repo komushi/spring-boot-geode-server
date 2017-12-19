@@ -91,14 +91,16 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
                 Operation operation = event.getOperation();
                 Integer countDiff = 0;
 
-                if (operation.equals(Operation.PUTALL_CREATE)) {
+                System.out.println("operation: " + operation);
+
+                if (operation.equals(Operation.PUTALL_CREATE) || operation.equals(Operation.PUTALL_UPDATE)) {
                     countDiff = 1;
                 }
                 else if (operation.equals(Operation.EXPIRE_DESTROY)) {
                     countDiff = -1;
                 }
                 else {
-                    System.out.println("unknown ooperation " + event.getOperation());
+                    System.out.println("unknown operation: " + operation);
                     continue;
                 }
 
