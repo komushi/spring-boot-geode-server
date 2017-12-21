@@ -59,28 +59,14 @@ java -jar target/spring-boot-geode-server-0.0.1-SNAPSHOT.jar
 
 ## 3. Run with docker deployment
 
-### 3.1 Option 1: pull & run
-```
-docker run -p 1099:1099 -p 40404:40404 -p 10334:10334 komushi/spring-boot-geode-server --properties.hostNameForClients=192.168.11.111
-```
-
-```
-docker run -p 1099:1099 -p 40404:40404 -p 10334:10334 komushi/spring-boot-geode-server --properties.startJmx=true
-```
-
-### 3.2 Option 2: build & run
-
 ```
 mvn clean package
 
 ./patch-jar.sh
 
-docker build -t <your_tag> .
-docker build -t komushi/spring-boot-geode-server .
+mvn docker:build
 
 docker run -p 1099:1099 -p 40404:40404 -p 10334:10334 <your_tag>
 
 docker run -p 1099:1099 -p 40404:40404 -p 10334:10334 komushi/spring-boot-geode-server
-
-docker run -p 1099:1099 -p 40404:40404 -p 10334:10334 komushi/spring-boot-geode-server --properties.bindAddress=192.168.11.111 --properties.hostNameForClients=192.168.11.111
 ```

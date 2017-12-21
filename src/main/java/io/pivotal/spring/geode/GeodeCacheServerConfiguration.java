@@ -43,10 +43,9 @@ public class GeodeCacheServerConfiguration {
 
         geodeCacheServer.setCache(gemfireCache);
         geodeCacheServer.setAutoStartup(properties.getAutoStartup());
-        // geodeCacheServer.setBindAddress(properties.getBindAddress());
-        // geodeCacheServer.setHostNameForClients(properties.getHostNameForClients());
-        // geodeCacheServer.setPort(properties.getCacheServerPort());
-        geodeCacheServer.setBindAddress("0.0.0.0");
+        geodeCacheServer.setBindAddress(properties.getBindAddress());
+        geodeCacheServer.setHostNameForClients(properties.getHostNameForClients());
+        geodeCacheServer.setPort(properties.getCacheServerPort());
         geodeCacheServer.setMaxConnections(properties.getMaxConnections());
 
         return geodeCacheServer;
@@ -58,8 +57,8 @@ public class GeodeCacheServerConfiguration {
 
         geodeCache.setClose(true);
         geodeCache.setProperties(geodeProperties);
-//        gemfireCache.setUseBeanFactoryLocator(false);
-        geodeCache.setPdxReadSerialized(false);
+        // gemfireCache.setUseBeanFactoryLocator(false);
+        // geodeCache.setPdxReadSerialized(false);
 
         return geodeCache;
     }
@@ -74,10 +73,7 @@ public class GeodeCacheServerConfiguration {
 
         if (properties.getUseLocator().equals("true")) {
             geodeProperties.setProperty("mcast-port", "0");
-            // geodeProperties.setProperty("locators", properties.getLocatorAddress());
-            // geodeProperties.setProperty("start-locator", properties.getLocatorAddress());
-            geodeProperties.setProperty("locators", "0.0.0.0[10334]");
-            geodeProperties.setProperty("start-locator", "0.0.0.0[10334]");
+            geodeProperties.setProperty("start-locator", properties.getLocatorAddress());
         }
 
         if (properties.getUseJmx().equals("true")) {

@@ -82,7 +82,7 @@
 			<plugin>
 				<groupId>io.fabric8</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.14.2</version>
+				<version>0.23.0</version>
 				<configuration>
 				  <images>
 				    <image>
@@ -93,11 +93,13 @@
 				          <volume>/tmp</volume>
 				        </volumes>
 				        <entryPoint>
-				          <exec>
-				            <arg>java</arg>
-				            <arg>-jar</arg>
-				            <arg>/maven/${project.artifactId}.jar</arg>
-				          </exec>
+							<exec>
+								<arg>java</arg>
+								<arg>-jar</arg>
+								<arg>/maven/${project.artifactId}.jar</arg>
+								<arg>--properties.useLocator=false</arg>
+								<arg>--properties.useJmx=false</arg>
+							</exec>
 				        </entryPoint>
 				        <assembly>
 				          <descriptor>assembly.xml</descriptor>
