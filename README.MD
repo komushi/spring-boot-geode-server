@@ -66,7 +66,7 @@ mvn clean package
 
 mvn docker:build
 
-docker run -p 1099:1099 -p 40404:40404 -p 10334:10334 <your_tag>
+docker run -p 40404:40404 <your_tag>
 
-docker run -p 1099:1099 -p 40404:40404 -p 10334:10334 komushi/spring-boot-geode-server
+docker run -p 40404:40404 komushi/spring-boot-geode-server
 ```
