@@ -13,7 +13,8 @@ public class GeodeProperties {
 
     // private static final Integer DEFAULT_CACHE_SERVER_PORT = 40404;
 
-    private static final String DEFAULT_LOG_LEVEL = "config";
+    // severe, error, warning, info, config, fine
+    private static final String DEFAULT_LOG_LEVEL = "warning";
 
     // private static final String DEFAULT_HOSTNAME_FOR_CLIENTS = "localhost";
 

@@ -55,6 +55,8 @@ Run it with java cli to test with gfsh.
 
 ```
 java -jar target/spring-boot-geode-server-0.0.1-SNAPSHOT.jar
+
+java -jar target/spring-boot-geode-server-0.0.1-SNAPSHOT.jar --properties.timeout=20
 ```
 
 ## 3. Run with docker deployment
