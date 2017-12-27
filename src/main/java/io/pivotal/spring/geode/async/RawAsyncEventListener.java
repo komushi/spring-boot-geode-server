@@ -93,7 +93,7 @@ public class RawAsyncEventListener implements AsyncEventListener, Declarable {
 
                 System.out.println("RawAsyncEventListener operation: " + operation);
 
-                if (operation.equals(Operation.PUTALL_CREATE) || operation.equals(Operation.PUTALL_UPDATE)) {
+                if (operation.equals(Operation.PUTALL_CREATE)) {
                     countDiff = 1;
                 }
                 else if (operation.equals(Operation.EXPIRE_DESTROY)) {

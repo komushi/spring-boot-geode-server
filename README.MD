@@ -54,9 +54,9 @@ There is a bug (https://issues.apache.org/jira/browse/GEODE-800). To solve it te
 Run it with java cli to test with gfsh.
 
 ```
-java -jar target/spring-boot-geode-server-0.0.1-SNAPSHOT.jar
+java -jar target/spring-boot-geode-server-incubating-m2-1.0.0-RELEASE.jar
 
-java -jar target/spring-boot-geode-server-0.0.1-SNAPSHOT.jar --properties.timeout=20
+java -jar target/spring-boot-geode-server-incubating-m2-1.0.0-RELEASE.jar --properties.timeout=20
 ```
 
 ## 3. Run with docker deployment
@@ -66,9 +66,9 @@ mvn clean package
 
 ./patch-jar.sh
 
-mvn docker:build
+docker build -t komushi/spring-boot-geode-server:incubating-m2 -f ./Dockerfile .
 
-docker run -p 40404:40404 <your_tag>
+docker tag komushi/spring-boot-geode-server:incubating-m2 komushi/spring-boot-geode-server:latest
 
 docker run -p 40404:40404 komushi/spring-boot-geode-server
 ```

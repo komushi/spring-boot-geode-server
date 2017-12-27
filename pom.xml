@@ -4,8 +4,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.pivotal.spring.geode</groupId>
-	<artifactId>spring-boot-geode-server</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>spring-boot-geode-server-incubating-m2</artifactId>
+	<version>1.0.0-RELEASE</version>
 	<packaging>jar</packaging>
 
 	<name>spring-boot-geode-server</name>
