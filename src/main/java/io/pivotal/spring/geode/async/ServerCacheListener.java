@@ -18,7 +18,12 @@ public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implemen
 
     public void afterDestroy(EntryEvent<K,V> e) {
         try {
-            if (e.getOperation().equals(Operation.EXPIRE_DESTROY)) {
+
+            Operation operation = e.getOperation();
+
+            System.out.println("ServerCacheListener operation: " + operation);
+
+            if (operation.equals(Operation.EXPIRE_DESTROY)) {
 
                 PdxInstance raw;
                 Object oldValue = e.getOldValue();

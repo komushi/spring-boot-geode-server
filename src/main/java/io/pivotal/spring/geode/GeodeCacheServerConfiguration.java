@@ -37,34 +37,6 @@ public class GeodeCacheServerConfiguration {
     private GeodeProperties properties;
 
     @Bean
-    CacheServerFactoryBean geodeCacheServer (Cache gemfireCache) {
-
-        CacheServerFactoryBean geodeCacheServer = new CacheServerFactoryBean();
-
-        geodeCacheServer.setCache(gemfireCache);
-        geodeCacheServer.setAutoStartup(properties.getAutoStartup());
-        // geodeCacheServer.setBindAddress(properties.getBindAddress());
-        // geodeCacheServer.setHostNameForClients(properties.getHostNameForClients());
-        // geodeCacheServer.setPort(properties.getCacheServerPort());
-        geodeCacheServer.setBindAddress("0.0.0.0");
-        geodeCacheServer.setMaxConnections(properties.getMaxConnections());
-
-        return geodeCacheServer;
-    }
-
-    @Bean
-    CacheFactoryBean geodeCache(@Qualifier("geodeProperties") Properties geodeProperties) {
-        CacheFactoryBean geodeCache = new CacheFactoryBean();
-
-        geodeCache.setClose(true);
-        geodeCache.setProperties(geodeProperties);
-//        gemfireCache.setUseBeanFactoryLocator(false);
-        geodeCache.setPdxReadSerialized(false);
-
-        return geodeCache;
-    }
-
-    @Bean
     Properties geodeProperties() {
         Properties geodeProperties = new Properties();
 
@@ -95,6 +67,37 @@ public class GeodeCacheServerConfiguration {
 
         return geodeProperties;
     }
+    
+
+    @Bean
+    CacheFactoryBean geodeCache(@Qualifier("geodeProperties") Properties geodeProperties) {
+        CacheFactoryBean geodeCache = new CacheFactoryBean();
+
+        geodeCache.setClose(true);
+        geodeCache.setProperties(geodeProperties);
+//        gemfireCache.setUseBeanFactoryLocator(false);
+        geodeCache.setPdxReadSerialized(false);
+
+        return geodeCache;
+    }
+
+    @Bean
+    CacheServerFactoryBean geodeCacheServer (Cache gemfireCache) {
+
+        CacheServerFactoryBean geodeCacheServer = new CacheServerFactoryBean();
+
+        geodeCacheServer.setCache(gemfireCache);
+        geodeCacheServer.setAutoStartup(properties.getAutoStartup());
+        // geodeCacheServer.setBindAddress(properties.getBindAddress());
+        // geodeCacheServer.setHostNameForClients(properties.getHostNameForClients());
+        // geodeCacheServer.setPort(properties.getCacheServerPort());
+        geodeCacheServer.setBindAddress("0.0.0.0");
+        geodeCacheServer.setMaxConnections(properties.getMaxConnections());
+
+        return geodeCacheServer;
+    }
+
+
 
 
     // RegRaw Configurations

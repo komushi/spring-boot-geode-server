@@ -7,26 +7,26 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix="properties")
 public class GeodeProperties {
-    private static final Integer DEFAULT_MAX_CONNECTIONS = 100;
+    // private static final Integer DEFAULT_MAX_CONNECTIONS = 100;
 
-    private static final Boolean DEFAULT_AUTO_STARTUP = true;
+    // private static final Boolean DEFAULT_AUTO_STARTUP = true;
 
-    private static final Integer DEFAULT_CACHE_SERVER_PORT = 40404;
+    // private static final Integer DEFAULT_CACHE_SERVER_PORT = 40404;
 
-    private static final String DEFAULT_LOG_LEVEL = "config";
+    // severe, error, warning, info, config, fine
+    private static final String DEFAULT_LOG_LEVEL = "warning";
 
-    private static final String DEFAULT_HOSTNAME_FOR_CLIENTS = "localhost";
+    // private static final String DEFAULT_HOSTNAME_FOR_CLIENTS = "localhost";
 
-    private static final String DEFAULT_JMX_MANAGER_PORT = "1099";
+    // private static final String DEFAULT_JMX_MANAGER_PORT = "1099";
 
-    private static final String DEFAULT_LOCATOR_ADDRESS = "localhost[10334]";
+    // private static final String DEFAULT_LOCATOR_ADDRESS = "localhost[10334]";
 
-    // private static final String DEFAULT_START_JMX = "false";
-    private static final String DEFAULT_START_JMX = "true";
+    // private static final String DEFAULT_START_JMX = "true";
 
-    private static final String DEFAULT_USE_JMX = "true";
+    // private static final String DEFAULT_USE_JMX = "true";
 
-    private static final String DEFAULT_USE_LOCATOR = "true";
+    // private static final String DEFAULT_USE_LOCATOR = "true";
 
     private Boolean autoStartup;
 
@@ -98,7 +98,7 @@ public class GeodeProperties {
 
     public Boolean getAutoStartup() {
         if (this.autoStartup == null) {
-            return DEFAULT_AUTO_STARTUP;
+            return true;
         }
         else {
             return this.autoStartup;
@@ -111,7 +111,7 @@ public class GeodeProperties {
 
     public String getBindAddress() {
         if (this.bindAddress == null) {
-            return DEFAULT_HOSTNAME_FOR_CLIENTS;
+            return "0.0.0.0";
         }
         else {
             return this.bindAddress;
@@ -124,7 +124,7 @@ public class GeodeProperties {
 
     public String getHostNameForClients() {
         if (this.hostNameForClients == null) {
-            return DEFAULT_HOSTNAME_FOR_CLIENTS;
+            return "0.0.0.0";
         }
         else {
             return this.hostNameForClients;
@@ -137,7 +137,7 @@ public class GeodeProperties {
 
     public Integer getCacheServerPort() {
         if (this.cacheServerPort == null) {
-            return DEFAULT_CACHE_SERVER_PORT;
+            return 40404;
         }
         else {
             return this.cacheServerPort;
@@ -150,7 +150,7 @@ public class GeodeProperties {
 
     public Integer getMaxConnections() {
         if (this.maxConnections == null) {
-            return DEFAULT_MAX_CONNECTIONS;
+            return 100;
         }
         else {
             return this.maxConnections;
@@ -184,7 +184,7 @@ public class GeodeProperties {
 
     public String getLocatorAddress() {
         if (this.locatorAddress == null) {
-            return DEFAULT_LOCATOR_ADDRESS;
+            return "0.0.0.0[10334]";
         }
         else {
             return this.locatorAddress;
@@ -197,7 +197,7 @@ public class GeodeProperties {
 
     public String getJmxManagerPort() {
         if (this.jmxManagerPort == null) {
-            return DEFAULT_JMX_MANAGER_PORT;
+            return "1099";
         }
         else {
             return this.jmxManagerPort;
@@ -210,7 +210,7 @@ public class GeodeProperties {
 
     public String getStartJmx() {
         if (this.startJmx == null) {
-            return DEFAULT_START_JMX;
+            return "true";
         }
         else {
             return this.startJmx;
@@ -223,7 +223,7 @@ public class GeodeProperties {
 
     public String getUseJmx() {
         if (this.useJmx == null) {
-            return DEFAULT_USE_JMX;
+            return "true";
         }
         else {
             return this.useJmx;
@@ -236,7 +236,7 @@ public class GeodeProperties {
 
     public String getUseLocator() {
         if (this.useLocator == null) {
-            return DEFAULT_USE_LOCATOR;
+            return "true";
         }
         else {
             return this.useLocator;
