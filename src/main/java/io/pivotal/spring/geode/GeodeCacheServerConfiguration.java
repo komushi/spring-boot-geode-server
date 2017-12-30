@@ -14,6 +14,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
+import org.springframework.data.gemfire.GenericRegionFactoryBean;
+import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.ExpirationAttributesFactoryBean;
 import org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean;
@@ -58,7 +60,10 @@ public class GeodeCacheServerConfiguration {
         geodeCache.setClose(true);
         geodeCache.setProperties(geodeProperties);
         // gemfireCache.setUseBeanFactoryLocator(false);
-        // geodeCache.setPdxReadSerialized(false);
+        geodeCache.setPdxReadSerialized(false);
+
+        // System.out.println("!!!!geodeCache.getProperties!!!!");
+        // System.out.println(geodeCache.getProperties());
 
         return geodeCache;
     }
@@ -69,6 +74,7 @@ public class GeodeCacheServerConfiguration {
 
         geodeProperties.setProperty("name", BootApplication.class.getSimpleName());
         geodeProperties.setProperty("log-level", properties.getLogLevel());
+        geodeProperties.setProperty("enforce-unique-host", "false");
 
 
         if (properties.getUseLocator().equals("true")) {
@@ -92,7 +98,6 @@ public class GeodeCacheServerConfiguration {
         return geodeProperties;
     }
 
-
     // RegRaw Configurations
     @Bean(name = "RegRaw")
     PartitionedRegionFactoryBean<String, Object> rawRegion(Cache gemfireCache,
@@ -114,7 +119,7 @@ public class GeodeCacheServerConfiguration {
     RegionAttributesFactoryBean rawRegionAttributes(@Qualifier("expirationAttributes") ExpirationAttributes expirationAttributes) {
         RegionAttributesFactoryBean rawRegionAttributes = new RegionAttributesFactoryBean();
 
-        rawRegionAttributes.addAsyncEventQueueId("rawQueue");
+        rawRegionAttributes.addAsyncEventQueueId("RegRawQueue");
         rawRegionAttributes.setKeyConstraint(String.class);
         rawRegionAttributes.setValueConstraint(Object.class);
         rawRegionAttributes.setEntryTimeToLive(expirationAttributes);
@@ -147,7 +152,7 @@ public class GeodeCacheServerConfiguration {
     @Bean
     AsyncEventQueueFactoryBean asyncEventQueue(Cache gemfireCache) {
         AsyncEventQueueFactoryBean asyncEventQueue = new AsyncEventQueueFactoryBean(gemfireCache, rawAsyncEventListener());
-        asyncEventQueue.setName("rawQueue");
+        asyncEventQueue.setName("RegRawQueue");
         asyncEventQueue.setParallel(false);
         asyncEventQueue.setDispatcherThreads(properties.getDispatcherThreads());
         asyncEventQueue.setBatchTimeInterval(properties.getBatchTimeInterval());
@@ -189,17 +194,32 @@ public class GeodeCacheServerConfiguration {
 
     // RegRouteTopTen Configurations
     @Bean(name = "RegRouteTopTen")
-    PartitionedRegionFactoryBean<Integer, Object> routeToptenRegion(Cache gemfireCache)
+    RegionFactoryBean<Integer, Object> routeToptenRegion(Cache gemfireCache)
     {
-        PartitionedRegionFactoryBean<Integer, Object> routeToptenRegion = new PartitionedRegionFactoryBean<>();
+        RegionFactoryBean<Integer, Object> routeToptenRegion = new GenericRegionFactoryBean<>();
 
-        routeToptenRegion.setCache(gemfireCache);
-//        topTenRegion.setClose(false);
+        routeToptenRegion.setCache(gemfireCache);;
         routeToptenRegion.setName("RegRouteTopTen");
         routeToptenRegion.setPersistent(false);
 
         return routeToptenRegion;
     }
+
+/** temporary work-round to solve the issue of scs-source-gemfire connecting to the region **/
+/*
+    // RegRouteTopTen Configurations
+    @Bean(name = "RegRouteTopTen")
+    PartitionedRegionFactoryBean<Integer, Object> routeToptenRegion(Cache gemfireCache)
+    {
+        PartitionedRegionFactoryBean<Integer, Object> routeToptenRegion = new PartitionedRegionFactoryBean<>();
+
+        routeToptenRegion.setCache(gemfireCache);;
+        routeToptenRegion.setName("RegRouteTopTen");
+        routeToptenRegion.setPersistent(false);
+
+        return routeToptenRegion;
+    }
+*/
 
     // RegDistrictCount Configurations
     @Bean(name = "RegDistrictCount")
@@ -214,6 +234,20 @@ public class GeodeCacheServerConfiguration {
         return districtCountRegion;
     }
 
+    /** temporary work-round to solve the issue of scs-source-gemfire connecting to the region **/
+    // RegDropoffDistrictTop Configurations
+    @Bean(name = "RegDropoffDistrictTop")
+    RegionFactoryBean<String, Object> dropoffDistrictTopRegion(Cache gemfireCache)
+    {
+        RegionFactoryBean<String, Object> dropoffDistrictTopRegion = new GenericRegionFactoryBean<>();
+
+        dropoffDistrictTopRegion.setCache(gemfireCache);
+        dropoffDistrictTopRegion.setName("RegDropoffDistrictTop");
+        dropoffDistrictTopRegion.setPersistent(false);
+
+        return dropoffDistrictTopRegion;
+    }
+/*    
     // RegDropoffDistrictTop Configurations
     @Bean(name = "RegDropoffDistrictTop")
     PartitionedRegionFactoryBean<String, Object> dropoffDistrictTopRegion(Cache gemfireCache)
@@ -226,6 +260,7 @@ public class GeodeCacheServerConfiguration {
 
         return dropoffDistrictTopRegion;
     }
+*/
 
     // RegDistrictRouteCount Configurations
     @Bean(name = "RegDistrictRouteCount")
