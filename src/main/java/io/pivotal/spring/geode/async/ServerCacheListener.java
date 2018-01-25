@@ -4,6 +4,7 @@ import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import io.pivotal.spring.geode.async.lib.RouteProcessor;
+import io.pivotal.spring.geode.async.lib.DistrictProcessor;
 
 import java.util.LinkedList;
 import java.util.Properties;
