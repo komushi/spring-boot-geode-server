@@ -12,10 +12,15 @@ import java.util.Properties;
 public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implements Declarable {
 
     private GemFireCache gemFireCache;
-    private Region regRouteCount;
 
+    // block route process
+    private Region regRouteCount;
     private Region<Integer, PdxInstance> regRouteTop;
     private Region regRouteTopTen;
+
+    // district process
+    private Region regDistrictCount;
+    private Region regDropoffDistrictTop;
 
     public void afterDestroy(EntryEvent<K,V> e) {
         try {
@@ -37,13 +42,29 @@ public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implemen
 
                 Integer countDiff = -1;
 
+                // gemFireCache = CacheFactory.getAnyInstance();
+                // regRouteCount = gemFireCache.getRegion("RegRouteCount");
+                // regRouteTop = gemFireCache.getRegion("RegRouteTop");
+                // regRouteTopTen = gemFireCache.getRegion("RegRouteTopTen");
+
+                // RouteProcessor routeProcessor = new RouteProcessor(regRouteCount, regRouteTop, regRouteTopTen);
+
                 gemFireCache = CacheFactory.getAnyInstance();
+
+                // for block route process
                 regRouteCount = gemFireCache.getRegion("RegRouteCount");
                 regRouteTop = gemFireCache.getRegion("RegRouteTop");
                 regRouteTopTen = gemFireCache.getRegion("RegRouteTopTen");
-
                 RouteProcessor routeProcessor = new RouteProcessor(regRouteCount, regRouteTop, regRouteTopTen);
 
+                // for district process
+                regDistrictCount = gemFireCache.getRegion("RegDistrictCount");
+                regDropoffDistrictTop = gemFireCache.getRegion("RegDropoffDistrictTop");
+                DistrictProcessor districtProcessor = new DistrictProcessor(regDistrictCount, regDropoffDistrictTop);
+
+                ///////////////////////////////////////////////////////////////////////////
+                ///////////////////////// block route process /////////////////////////////
+                ///////////////////////////////////////////////////////////////////////////
                 // count & top process
                 String route = (String)raw.getField("route");
                 String pickupAddress = (String)raw.getField("pickupAddress");
@@ -84,12 +105,7 @@ public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implemen
                 Integer keyCount = 0;
                 Boolean incremental = false;
 
-
-
-//                processor.processRegionCount(route, originalCount, originalTimestamp, newCount, newTimestamp);
                 routeProcessor.processRouteCount(route, pickupAddress, dropoffAddress, originalCount, newCount, newTimestamp);
-
-//                processor.processRegionTop(route, originalCount, originalTimestamp, newCount, newTimestamp);
                 routeProcessor.processRouteTop(route, pickupAddress, dropoffAddress, originalCount, originalTimestamp, newCount, newTimestamp);
 
                 if (newCount < originalCount) {
@@ -103,10 +119,37 @@ public class ServerCacheListener<K,V> extends CacheListenerAdapter<K,V> implemen
                         keyCount = newCount;
                         incremental = false;
 
-//                        processor.processRegionTopTen(keyRoute, keyUuid, keyCount, keyTimestamp, incremental);
                         routeProcessor.processRouteTopTen(keyRoute, keyPickupAddress, keyDropoffAddress, keyUuid, keyCount, keyTimestamp, incremental);
                     }
                 }
+
+                ///////////////////////////////////////////////////////////////////////////
+                /////////////////////////// district process //////////////////////////////
+                ///////////////////////////////////////////////////////////////////////////
+                String dropoffDistrict = (String)raw.getField("dropoffDistrict");
+                String dropoffDistrictCode = (String)raw.getField("dropoffDistrictCode");
+                String pickupDistrict = (String)raw.getField("pickupDistrict");
+                String pickupDistrictCode = (String)raw.getField("pickupDistrictCode");
+
+                Integer originalDropoffDistrictCount = 0 ;
+                Integer originalDropoffDistrictAsPickupCount = 0 ;
+                Integer newDropoffDistrictCount  = 0;
+
+                PdxInstance originalDropoffDistrict = (PdxInstance)regDistrictCount.get(dropoffDistrictCode);
+
+                if(originalDropoffDistrict == null){
+                    newDropoffDistrictCount = 1;
+                }
+                else
+                {
+                    originalDropoffDistrictCount = Integer.parseInt(originalDropoffDistrict.getField("dropoffCount").toString());
+                    newDropoffDistrictCount = originalDropoffDistrictCount + countDiff;
+                    originalDropoffDistrictAsPickupCount = Integer.parseInt(originalDropoffDistrict.getField("pickupCount").toString());
+                }
+
+
+                districtProcessor.processDropoffDistrictCount(dropoffDistrictCode, dropoffDistrict, originalDropoffDistrictCount, originalDropoffDistrictAsPickupCount, newDropoffDistrictCount, newTimestamp);
+                districtProcessor.processDropoffDistrictTop(keyTimestamp);
 
             }
             else {
