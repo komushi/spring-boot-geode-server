@@ -62,7 +62,7 @@ java -jar target/spring-boot-geode-server-incubating-m2-1.0.0-RELEASE.jar --prop
 ## 3. Run with docker deployment
 
 ```
-mvn clean package
+mvn clean package -DskipTests
 
 ./patch-jar.sh
 
